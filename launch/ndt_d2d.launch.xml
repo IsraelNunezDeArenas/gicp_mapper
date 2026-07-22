@@ -1,0 +1,84 @@
+<launch>
+
+	<arg name="topic_localization" default="/pose_gt"/>
+	<arg name="use_ground_truth" default="true"/>
+	
+     <node pkg="voxeland_robot_perception" exec="robot_perception_node.py" name="voxeland_perception_node">
+
+		<!-- Dataset Name -->
+		<param name="dataset" value="" />
+		<param name="object_detector" value="" />
+
+		<!-- Topics and Services -->
+		<param name="topic_camera_info" value="/rgbd/info" />
+		<param name="topic_rgb_image" value="/camera/rgb" />
+		<param name="topic_depth_image" value="/camera/depth" />
+		<param name="topic_localization" value="$(var topic_localization)"/>
+	
+		<param name="semantic_segmentation_mode" value=""/>		# Possible values: "topic" or "service"
+		<param name="service_sem_seg" value="/detectron/segment" />	# used if semantic_segmentation_mode="service"
+		<param name="topic_sem_seg" value="/ViMantic/Detections" />	# used if semantic_segmentation_mode="topic"
+
+
+		<!-- Images Messages Types -->
+        <param name="rgb_image_type" value="Image" />     # Possible values: "CompressedImage" or "Image"
+        <param name="depth_image_type" value="Image" />   # Possible values: "CompressedImage" or "Image"
+		
+		<!-- RGB-D Camera Info -->
+		<param name="intrinsics_from_topic" value="False" />
+        <param name="width"  value="640"/>
+        <param name="height" value="640"/>
+        <param name="fx" value="320.0"/>
+        <param name="fy" value="320.0"/>
+        <param name="cx" value="320.0"/>
+        <param name="cy" value="320.0"/>
+		<param name="camera_max_depth" value="10.0" />
+
+		<param name="limit_reliable_depth" value="false" />
+		<param name="min_reliable_depth" value="0.01" />
+		<param name="max_reliable_depth" value="3.00" />
+
+		<!-- Frame IDs -->
+		<param name="map_frame_id" value="map" />
+		<param name="robot_frame_id" value="base_link" />
+		<param name="camera_frame_id" value="camera" />   
+
+		<!-- Output configuration -->
+		<param name="pointcloud_type" value="XYZRGB"/>					# Possible values: "XYZ", "XYZRGB" and "XYZSemantics"
+		<param name="topic_pointcloud_output" value="/cloud_in" />
+
+	</node>
+
+	<arg name="resolution" default="0.02"/>
+	<arg name="registration_metric" default="mahalanobis"/>
+
+    <node pkg="gicp_mapper" exec="ndt_input_scan" name="ndt_input_scan">
+
+       <param name="resolution" value="$(var resolution)" />
+
+	</node>
+
+    <node pkg="gicp_mapper" exec="ndt_matcher_node" name="ndt_matcher_node">
+	
+	<param name="scan_topic" value="ndt_cloud"/>
+
+    <param name="resolution" value="$(var resolution)"/>
+	<param name="use_ground_truth" value="$(var use_ground_truth)"/>
+
+    <param name="max_iterations" value="64"/>
+    <param name="translation_eps" value="0.0001"/>
+    <param name="rotation_eps" value="0.0001"/>
+    <param name="max_mahalanobis_dist" value="9.0"/>
+    <param name="covariance_reg" value="0.000001"/>
+    <param name="min_points_per_cell" value="5"/>
+    <param name="min_correspondences" value="6"/>
+    <param name="fitness_reject" value="1000000.0"/>
+    <param name="drop_on_reject" value="false"/>
+
+	<param name="registration_metric" value="$(var registration_metric)"/>
+	<param name="max_kld" value="100.0"/>
+
+
+	</node>
+
+</launch>

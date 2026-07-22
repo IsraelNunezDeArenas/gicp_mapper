@@ -1,0 +1,37 @@
+gicp_mapper:
+  ros__parameters:
+
+    # ── Frames ──────────────────────────────────────────────────────────────
+    map_frame:   "map"
+    base_frame:  "base_link"
+
+    # ── Entrada ─────────────────────────────────────────────────────────────
+    use_scan:    false           # false → PointCloud2 | true → LaserScan
+    cloud_topic: "/cloud_in"
+    scan_topic:  "/scan"
+
+    # ── GICP ────────────────────────────────────────────────────────────────
+    num_threads:             4
+    max_iterations:          64
+    max_correspondence_dist: 2.0
+    transformation_epsilon:  0.001
+
+    # ── Downsampling ─────────────────────────────────────────────────────────
+    input_leaf_size: 0.10
+    map_leaf_size:   0.15
+
+    # ── Keyframes ────────────────────────────────────────────────────────────
+    keyframe_delta_trans: 0.30
+    keyframe_delta_angle: 0.15
+    local_map_window:     20
+
+    # ── Publicación ──────────────────────────────────────────────────────────
+    map_topic:   "/gicp_map"
+    pose_topic:  "/gicp_pose"
+    path_topic:  "/gicp_path"
+    publish_tf:  true
+    map_period:  2.0
+
+    # ── Guardado ─────────────────────────────────────────────────────────────
+    # ros2 service call /gicp_mapper/save_map std_srvs/srv/Trigger
+    save_path: "/tmp/gicp_map.pcd"
